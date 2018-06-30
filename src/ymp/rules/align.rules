@@ -1,3 +1,9 @@
+Env(name="mafft", base="bioconda", packages="mafft")
+
+with Stage("align") as S:
+  S.doc("""
+  """)
+
 rule combine_with_ref:
     message:
         "Adding {wildcards.gene} reference sequences to {input[1]}"
@@ -13,13 +19,13 @@ rule align_mafft:
     message:
         "MaFFT aligning {input}"
     input:
-        "{dir}/{file}.fastp"
+        "{dir}/{file}.fasta.gz"
     output:
-        "{dir}.mafft/{file}.aligned.fastp.gz"
+        "{dir}.mafft/{file}.aligned.fasta.gz"
     log:
         "{dir}.mafft/{file}.log"
     threads:
-        32
+        8
     shell:"""
     cat {input} | \
     mafft \
@@ -30,3 +36,10 @@ rule align_mafft:
       - \
       2> {log} | gzip -c > {output}
     """
+    rule align_all:
+      message:
+       "mafft done"
+      input:
+       "{:this:}/{:targets:}.fasta.gz"
+      output:
+       touch("{:this:}/all")
